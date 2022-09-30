@@ -1,0 +1,21 @@
+{
+  "name": "ssrf-vulnerable-webapp-in-aws",
+  "version": "1.0.0",
+  "description": "Web app that has a SSRF vulnerability running in an emulated AWS environment.",
+  "main": "index.js",
+  "scripts": {
+    "server": "node app/server.js"
+  },
+  "keywords": [
+    "vulnerable",
+    "ssrf",
+    "aws",
+    "imds"
+  ],
+  "author": "Ståle Pettersen",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.1",
+    "node-fetch": "^2.6.7"
+  }
+}
