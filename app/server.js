@@ -46,14 +46,21 @@ app.get('/script.js', (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Image fetcher app listening on port ${port}`)
+  console.log(`Add IP 169.254.169.254`)
   console.log(`Emulating EC2 metadata (IMDSv1 and IMDSv2) on port 80`)
-  console.log(`Emulating EC2 metadata (IMDSv2 only) on port 2000`)
-  try {
-    child_process.spawn('ip', ['address', 'add', '169.254.169.254/24', 'dev', 'eth0'], { stdio: 'ignore', detached: true }).unref()
-  } catch (error) {
-    console.log('Could not set IP 169.254.169.254, use localhost in payloads intead. Probably missing --cap-add NET_ADMIN or not running in a container.', error)
-  }
-  child_process.spawn('/app/ec2-metadata-mock', ['-p', '80'], { stdio: 'ignore', detached: true }).unref()
-  child_process.spawn('/app/ec2-metadata-mock', ['-p', '2000', '--imdsv2'], { stdio: 'ignore', detached: true }).unref()
+  console.log(`Emulating EC2 metadata (IMDSv2 only) on port 2000`)  
+  const ipProcess = child_process.spawn('ip', ['address', 'add', '169.254.169.254/24', 'dev', 'eth0'], { stdio: 'ignore', detached: true })
+  ipProcess.on('error', (error) => {
+      console.log('Could not set IP 169.254.169.254, use localhost in payloads intead. Probably missing --cap-add NET_ADMIN or not running in a container. Error:', error.message)
+  })
+  // TODO: Allow ec2-metadata-mock on different paths.. makes it hard to develop outside of a container.
+  const imdsv1Process = child_process.spawn('/app/ec2-metadata-mock', ['-p', '80'], { stdio: 'ignore', detached: true })
+  imdsv1Process.on('error', (error) => {
+    console.log('Could not launch ec2-metadata-mock on port 80. Error:', error.message)
+  })
+  const imdsv2Process = child_process.spawn('/app/ec2-metadata-mock', ['-p', '2000', '--imdsv2'], { stdio: 'ignore', detached: true })
+  imdsv2Process.on('error', (error) => {
+    console.log('Could not launch ec2-metadata-mock on port 2000. Error:', error.message)
+  })
 
 })
